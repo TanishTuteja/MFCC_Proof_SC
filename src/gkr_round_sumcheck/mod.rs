@@ -162,7 +162,7 @@ impl<F: Field> GKRRoundSumcheck<F> {
         f2_num_vars: usize,
         proof: &GKRProof<F>,
         claimed_sum: F,
-    ) -> Result<GKRRoundSumcheckSubClaim<F>, crate::Error> {
+    ) -> Result<(GKRRoundSumcheckSubClaim<F>, F), crate::Error> {
         // verify first sumcheck
         let dim = f2_num_vars;
 
@@ -176,6 +176,7 @@ impl<F: Field> GKRRoundSumcheck<F> {
             rng.feed(pm).unwrap();
             let _result = IPForMLSumcheck::verify_round((*pm).clone(), &mut phase1_vs, rng);
         }
+        let eval_p1 = phase1_vs.polynomials_received[0][0] + phase1_vs.polynomials_received[0][1];
         let phase1_subclaim = IPForMLSumcheck::check_and_generate_subclaim(phase1_vs, claimed_sum)?;
         let u = phase1_subclaim.point;
 
@@ -197,10 +198,10 @@ impl<F: Field> GKRRoundSumcheck<F> {
 
         let expected_evaluation = phase2_subclaim.expected_evaluation;
 
-        Ok(GKRRoundSumcheckSubClaim {
+        Ok((GKRRoundSumcheckSubClaim {
             u,
             v,
             expected_evaluation,
-        })
+        }, eval_p1))
     }
 }

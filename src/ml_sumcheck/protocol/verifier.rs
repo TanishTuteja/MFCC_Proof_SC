@@ -21,7 +21,7 @@ pub struct VerifierState<F: Field> {
     max_multiplicands: usize,
     finished: bool,
     /// a list storing the univariate polynomial in evaluation form sent by the prover at each round
-    polynomials_received: Vec<Vec<F>>,
+    pub polynomials_received: Vec<Vec<F>>,
     /// a list storing the randomness sampled by the verifier at each round
     randomness: Vec<F>,
 }
@@ -96,10 +96,14 @@ impl<F: Field> IPForMLSumcheck<F> {
         }
 
         let mut expected = asserted_sum;
+
+        let evaluations = &verifier_state.polynomials_received[0];
+        expected = interpolate_uni_poly(evaluations, verifier_state.randomness[0]);
+
         if verifier_state.polynomials_received.len() != verifier_state.nv {
             panic!("insufficient rounds");
         }
-        for i in 0..verifier_state.nv {
+        for i in 1..verifier_state.nv {
             let evaluations = &verifier_state.polynomials_received[i];
             if evaluations.len() != verifier_state.max_multiplicands + 1 {
                 panic!("incorrect number of evaluations");
